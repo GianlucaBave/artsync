@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'fram
 import Image from 'next/image'
 import { artists } from '@/data/mockData'
 import FallenLetters from '@/components/FallenLetters'
+import TestimonialsMarquee from '@/components/TestimonialsMarquee'
 
 export default function LandingPage() {
   const { scrollY } = useScroll()
@@ -13,16 +14,24 @@ export default function LandingPage() {
   const y = useTransform(scrollY, [0, 500], [0, -100])
   const opacity = useTransform(scrollY, [0, 300], [1, 0])
 
-  // Get featured artworks for marquee
-  const featuredArtworks = artists.flatMap(artist => artist.portfolio).slice(0, 8)
-  const featuredArtist = artists[0]
+  // Carousel state
+  const [currentArtistIndex, setCurrentArtistIndex] = useState(0)
+  const featuredArtist = artists[currentArtistIndex]
+
+  const nextArtist = () => {
+    setCurrentArtistIndex((prev) => (prev + 1) % artists.length)
+  }
+
+  const prevArtist = () => {
+    setCurrentArtistIndex((prev) => (prev - 1 + artists.length) % artists.length)
+  }
 
   return (
     <main className="bg-[#f3eee8] text-black overflow-hidden">
       {/* Hero Section */}
       <motion.section
         ref={heroRef}
-        className="relative h-[calc(100vh-4rem)] min-h-[720px] flex items-start justify-start pt-24 lg:pt-32 px-6 md:px-16 lg:px-24 overflow-hidden"
+        className="relative h-[calc(100vh-4rem)] flex items-start justify-start pt-24 lg:pt-32 px-6 md:px-16 lg:px-24 overflow-hidden"
         style={{ y }}
       >
         {/* Fallen background letters (interactive) */}
@@ -39,16 +48,16 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto">
             <div className="grid lg:grid-cols-12 items-start">
               <div className="lg:col-span-5" />
-              <div className="lg:col-span-7">
-                <div className="flex items-baseline gap-3 mb-4">
+              <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left">
+                <div className="flex items-center gap-3 mb-4 w-full justify-center lg:justify-start">
                   <span className="text-[11px] font-semibold tracking-widest uppercase text-black/70">
                     (WE ARE)
                   </span>
-                  <span className="h-px flex-1 bg-black/10" />
+                  <span className="hidden lg:block h-px flex-1 bg-black/10" />
                 </div>
 
                 <motion.h1
-                  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-bold leading-[1.1] text-black"
+                  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-bold leading-[1.1] text-black w-full"
                   initial={{ opacity: 0, y: 60 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.1, delay: 0.1 }}
@@ -59,7 +68,7 @@ export default function LandingPage() {
                 </motion.h1>
 
                 <motion.p
-                  className="mt-4 text-sm sm:text-base md:text-lg text-black/70 max-w-xl"
+                  className="mt-4 text-sm sm:text-base md:text-lg text-black/70 max-w-xl mx-auto lg:mx-0"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.9, delay: 0.35 }}
@@ -68,7 +77,7 @@ export default function LandingPage() {
                   Escrow holds payment until delivery.
                 </motion.p>
 
-                <div className="mt-10 flex flex-wrap items-center gap-4">
+                <div className="mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-4 w-full">
                   <MagneticButton href="/marketplace">
                     Enter Marketplace
                   </MagneticButton>
@@ -97,42 +106,11 @@ export default function LandingPage() {
         </motion.div>
       </motion.section>
 
-      {/* Featured Art Marquee */}
-      <section className="py-20 bg-white">
-        <div className="overflow-hidden">
-          <motion.div
-            className="flex gap-8"
-            animate={{
-              x: [0, -50 * featuredArtworks.length * 2],
-            }}
-            transition={{
-              duration: 30,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-          >
-            {[...featuredArtworks, ...featuredArtworks].map((artwork, idx) => (
-              <motion.div
-                key={`${artwork.id}-${idx}`}
-                className="flex-shrink-0 w-64 md:w-80 h-96 relative group cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: 'spring', stiffness: 300 }}
-              >
-                <Image
-                  src={artwork.image}
-                  alt={artwork.title}
-                  fill
-                  className="object-cover rounded-sm"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+      {/* Testimonials Marquee */}
+      <TestimonialsMarquee />
 
       {/* Process Section */}
-      <section className="py-32 px-8 md:px-16 lg:px-24 bg-white">
+      <section className="pt-16 pb-20 md:pt-28 md:pb-24 px-4 md:px-16 lg:px-24 bg-white">
         <motion.div
           className="max-w-6xl mx-auto"
           initial={{ opacity: 0 }}
@@ -140,67 +118,40 @@ export default function LandingPage() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.8 }}
         >
-          <h2 className="text-5xl md:text-6xl font-serif font-bold mb-20 text-center">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-10 md:mb-20 text-center">
             How It Works
           </h2>
 
           <div className="relative">
             <div className="hidden md:block absolute inset-x-0 top-10 h-px bg-gradient-to-r from-transparent via-neutral-300 to-transparent pointer-events-none" />
-            <div className="grid gap-10 md:gap-10 grid-cols-1 md:grid-cols-3">
+            <div className="grid gap-8 md:gap-10 grid-cols-1 md:grid-cols-3">
               {[
                 {
-                  step: '01',
+                  emoji: '🧑‍🎨',
                   title: 'Find an artist',
                   desc: 'Browse the marketplace and filter by style, price, and availability until you find a portfolio you love.',
-                  icon: (
-                    <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="8" r="3.2" />
-                      <path d="M5 20c.8-4 4-6 7-6s6.2 2 7 6" />
-                    </svg>
-                  ),
                 },
                 {
-                  step: '02',
+                  emoji: '✨',
                   title: 'Prompt your idea (AI)',
                   desc: 'Describe what you want. AI generates a concept in the artist’s style — or upload an image you already have.',
-                  icon: (
-                    <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2l1.8 5.4L19 9.2l-4.8 1.6L12 16l-2.2-5.2L5 9.2l5.2-1.8L12 2Z" />
-                      <path d="M4 18h7" />
-                      <path d="M4 21h10" />
-                    </svg>
-                  ),
                 },
                 {
-                  step: '03',
+                  emoji: '📦',
                   title: 'Send & get it delivered',
                   desc: 'Send the request. If accepted, the artist creates the piece and ships it to you — payment releases on approval.',
-                  icon: (
-                    <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 7h11v10H3V7Z" />
-                      <path d="M14 10h4l3 3v4h-7v-7Z" />
-                      <circle cx="7" cy="18" r="1.6" />
-                      <circle cx="18" cy="18" r="1.6" />
-                      <path d="M10 11h2" />
-                    </svg>
-                  ),
                 },
               ].map((item, idx) => (
                 <motion.div
-                  key={item.step}
-                  className="flex flex-col gap-4 pt-4 md:pt-12"
+                  key={idx}
+                  className="flex flex-col gap-4 pt-4 md:pt-12 text-center md:text-left"
                   initial={{ opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '-80px' }}
                   transition={{ duration: 0.5, delay: idx * 0.08 }}
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="h-8 w-8 flex items-center justify-center rounded-full bg-black text-white text-[10px] font-semibold tracking-widest uppercase">
-                      {item.step}
-                    </div>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 border border-neutral-200 text-black">
-                      {item.icon}
-                    </div>
+                  <div className="text-5xl md:text-6xl mb-4 transform hover:scale-110 transition-transform duration-300 inline-block cursor-default">
+                    {item.emoji}
                   </div>
                   <div className="space-y-3">
                     <h3 className="text-xl md:text-2xl font-serif font-bold">{item.title}</h3>
@@ -215,60 +166,90 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Spotlight Section */}
-      <section className="py-32 px-8 md:px-16 lg:px-24 bg-white">
+      {/* Spotlight Section - Carousel */}
+      <section className="pt-8 pb-24 md:pt-16 md:pb-32 px-8 md:px-16 lg:px-24 bg-white">
         <motion.div
-          className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center"
+          className="max-w-7xl mx-auto"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.8 }}
         >
-          <motion.div
-            className="relative h-[600px] md:h-[800px]"
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <Image
-              src={featuredArtist.portfolio[0]?.image || featuredArtworks[0]?.image}
-              alt={featuredArtist.name}
-              fill
-              className="object-cover rounded-sm"
-            />
-          </motion.div>
+          {/* Header placed above */}
+          <div className="mb-8 flex items-center justify-between">
+            <div className="text-center md:text-left flex-1">
+              <div className="text-sm font-mono tracking-widest uppercase text-gray-500 mb-2">
+                Featured Artists
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-6xl font-serif font-bold leading-tight whitespace-nowrap">
+                {featuredArtist.name}
+              </h2>
+            </div>
 
-          <motion.div
-            className="space-y-8"
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <div className="text-sm font-mono tracking-widest uppercase text-gray-500">
-              Featured Artist
+            {/* Carousel Controls */}
+            <div className="flex gap-2">
+              <button
+                onClick={prevArtist}
+                className="w-12 h-12 flex items-center justify-center rounded-full border border-black/10 hover:border-black hover:bg-black hover:text-white transition-all"
+                aria-label="Previous artist"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={nextArtist}
+                className="w-12 h-12 flex items-center justify-center rounded-full border border-black/10 hover:border-black hover:bg-black hover:text-white transition-all"
+                aria-label="Next artist"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
-            <h2 className="text-5xl md:text-6xl font-serif font-bold leading-tight">
-              {featuredArtist.name}
-            </h2>
-            <p className="text-xl text-gray-600 leading-relaxed">
-              {featuredArtist.bio}
-            </p>
-            <div className="flex gap-4 flex-wrap">
-              {featuredArtist.style.map(s => (
-                <span
-                  key={s}
-                  className="px-4 py-2 border border-black text-sm uppercase tracking-widest"
-                >
-                  {s}
-                </span>
-              ))}
-            </div>
-            <MagneticButton href="/marketplace" variant="outline">
-              Meet the Artist
-            </MagneticButton>
-          </motion.div>
+          </div>
+
+          <div className="relative overflow-hidden min-h-[600px] md:min-h-[600px]">
+            {/* Key changes to force animation re-render when index changes */}
+            <motion.div
+              key={currentArtistIndex}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4 }}
+              className="grid md:grid-cols-2 gap-8 md:gap-16 items-start"
+            >
+              <div className="relative h-[280px] md:h-[600px] w-full">
+                <Image
+                  src={featuredArtist.portfolio[0]?.image}
+                  alt={featuredArtist.name}
+                  fill
+                  className="object-cover rounded-sm"
+                />
+              </div>
+
+              <div className="space-y-6 md:space-y-8 text-center md:text-left">
+                <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
+                  {featuredArtist.bio}
+                </p>
+                <div className="flex gap-3 flex-wrap justify-center md:justify-start">
+                  {featuredArtist.style.map(s => (
+                    <span
+                      key={s}
+                      className="px-3 py-1.5 md:px-4 md:py-2 border border-black text-xs md:text-sm uppercase tracking-widest"
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex justify-center md:justify-start">
+                  <MagneticButton href="/marketplace" variant="outline">
+                    View Portfolio
+                  </MagneticButton>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </motion.div>
       </section>
     </main>

@@ -38,11 +38,12 @@ export default function FallenLetters() {
             return Bodies.rectangle(
                 spawnX + (Math.random() * 200 - 100), // Cluster around target X
                 -600 - (i * 300), // Start High Up (Fall from sky)
-                letterSize * 0.6, // Hitbox width (letters are usually narrower than square)
-                letterSize * 0.8, // Hitbox height
+                letterSize * 0.42, // Hitbox width
+                letterSize * 0.82, // Hitbox height
                 {
-                    restitution: 0.6,
-                    friction: 0.1,
+                    chamfer: { radius: letterSize * 0.15 }, // Round corners for smoother landing/leveling
+                    restitution: 0.4,
+                    friction: 0.1,    // Low friction to slide more
                     density: 1,
                     angle: (Math.random() * 0.5) - 0.25
                 }
@@ -51,10 +52,14 @@ export default function FallenLetters() {
 
         // 4. Create Walls
         const wallOptions = { isStatic: true, render: { visible: false } }
-        const ground = Bodies.rectangle(width / 2, height + 100, width * 2, 200, wallOptions)
+        // Raise floor by 10px to account for visual overflow
+        // Lower floor so letters sit below the fold (top edge at height + 20)
+        const ground = Bodies.rectangle(width / 2, height + 100 + 20, width * 2, 200, wallOptions)
         // No ceiling so letters can fall from infinitely high
-        const leftWall = Bodies.rectangle(-50, height / 2, 100, height * 10, wallOptions) // Tall walls
-        const rightWall = Bodies.rectangle(width + 50, height / 2, 100, height * 10, wallOptions)
+        // Move left wall inwards (right edge at +30) to account for visual overflow vs hitbox size
+        const leftWall = Bodies.rectangle(-70, height / 2, 200, height * 10, wallOptions)
+        // Move right wall further right (edge at width + 20) to prevent feeling cramped
+        const rightWall = Bodies.rectangle(width + 120, height / 2, 200, height * 10, wallOptions)
 
         Composite.add(world, [...letterBodies, ground, leftWall, rightWall])
 
@@ -120,11 +125,11 @@ export default function FallenLetters() {
             const w = containerRef.current.clientWidth
             const h = containerRef.current.clientHeight
 
-            Matter.Body.setPosition(ground, { x: w / 2, y: h + 100 })
-            Matter.Body.setVertices(ground, Matter.Bodies.rectangle(w / 2, h + 100, w * 2, 200).vertices)
+            Matter.Body.setPosition(ground, { x: w / 2, y: h + 100 + 20 })
+            Matter.Body.setVertices(ground, Matter.Bodies.rectangle(w / 2, h + 100 + 20, w * 2, 200).vertices)
 
-            Matter.Body.setPosition(rightWall, { x: w + 50, y: h / 2 })
-            Matter.Body.setPosition(leftWall, { x: -50, y: h / 2 })
+            Matter.Body.setPosition(rightWall, { x: w + 120, y: h / 2 })
+            Matter.Body.setPosition(leftWall, { x: -70, y: h / 2 })
         }
         window.addEventListener('resize', handleResize)
 
